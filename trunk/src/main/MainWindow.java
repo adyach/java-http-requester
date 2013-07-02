@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,6 +39,7 @@ public class MainWindow implements Runnable {
     private static final String FORMAT_BUTTON_NAME = "Format";
     private static final String OPEN_BUTTON_NAME = "Open";
     private static final String SAVE_BUTTON_NAME = "Save";
+    private static final String ABOUT_BUTTON_NAME = "About";
     private static final String SEND_BUTTON_NAME = "Send";
     private static final String RIF_EXT = "rif";
     private static final String XML_EXT = "xml";
@@ -187,6 +189,20 @@ public class MainWindow implements Runnable {
             }
         });
 
+        final JMenuItem about = new JMenuItem(ABOUT_BUTTON_NAME);
+        menu.add(about);
+        about.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                final String newLine = System.getProperty("line.separator");
+
+                final JOptionPane dialog = new JOptionPane("About");
+                dialog.showMessageDialog(null, "Requester v1.0." + newLine + " Andrey Dyachkov" + newLine + " andrey.dyachkov@gmail.com");
+            }
+        });
+
         return menu;
     }
 
@@ -201,7 +217,8 @@ public class MainWindow implements Runnable {
             public void actionPerformed(ActionEvent e) {
 
                 final String urlStr = url.getText();
-                final String requestStr = requestField.getText();
+                String requestStr;
+                requestStr = new String(requestField.getText().getBytes(Charset.forName("UTF-8")));
 
                 codeArea.setText(RESPONSE_CODE);
                 sizeArea.setText(RESPONSE_SIZE);

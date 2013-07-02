@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
+import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
 
 public class PostRequester implements Callable<Response> {
@@ -38,18 +38,19 @@ public class PostRequester implements Callable<Response> {
         final long startTime = System.currentTimeMillis();
 
         URL url = new URL(requestingUrl);
-        URLConnection conn = url.openConnection();
-
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/xml;charset=UTF-8");
+        conn.setDoInput(true);
         conn.setDoOutput(true);
 
         OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
 
-        //        writer.write(request.replaceAll(" ", "").replaceAll("\n", ""));
         writer.write(request);
         writer.flush();
 
         String line;
-        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), Charset.forName("UTF-8")));
         StringBuilder sb = new StringBuilder();
         while ((line = reader.readLine()) != null) {
             sb.append(line);
@@ -57,7 +58,7 @@ public class PostRequester implements Callable<Response> {
         writer.close();
         reader.close();
 
-        final int responseCode = ((HttpURLConnection) conn).getResponseCode();
+        final int responseCode = conn.getResponseCode();
         final long responseTime = System.currentTimeMillis() - startTime;
 
         response = new Response(sb.toString(), responseCode, sb.length(), responseTime);

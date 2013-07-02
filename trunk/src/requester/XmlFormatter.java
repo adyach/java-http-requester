@@ -2,6 +2,7 @@ package requester;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.Charset;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
@@ -27,15 +28,17 @@ public class XmlFormatter {
 
         try {
             final Transformer serializer = SAXTransformerFactory.newInstance().newTransformer();
+
             serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-            //            serializer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-            final Source xmlSource = new SAXSource(new InputSource(new ByteArrayInputStream(xml.getBytes())));
+
+            final Source xmlSource = new SAXSource(new InputSource(new ByteArrayInputStream(xml.getBytes(Charset.forName("UTF-8")))));
             final StreamResult res = new StreamResult(new ByteArrayOutputStream());
             serializer.transform(xmlSource, res);
-            return new String(((ByteArrayOutputStream) res.getOutputStream()).toByteArray());
+
+            return new String(((ByteArrayOutputStream) res.getOutputStream()).toByteArray(), Charset.forName("UTF-8"));
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
             return xml;
         }
     }
