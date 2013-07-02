@@ -1,11 +1,15 @@
 package requester;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 
 /**
  * 
@@ -14,6 +18,8 @@ import java.io.IOException;
  */
 public class FileHelper {
 
+    private static final String NEW_LINE = System.getProperty("line.separator");
+
     private FileHelper() {
 
     }
@@ -21,13 +27,14 @@ public class FileHelper {
     public static String readFileXml(File file) {
 
         final StringBuffer stringFile = new StringBuffer();
-        FileReader fr = null;
+        FileInputStream fis = null;
 
         try {
-            fr = new FileReader(file);
-            char[] buff = new char[(int) file.length()];
-            while (fr.read(buff, 0, (int) file.length()) != -1) {
-                stringFile.append(buff);
+
+            fis = new FileInputStream(file);
+            byte[] buff = new byte[10];
+            while (fis.read(buff) != -1) {
+                stringFile.append(new String(buff, Charset.forName("UTF-8")));
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -35,8 +42,8 @@ public class FileHelper {
             e.printStackTrace();
         } finally {
             try {
-                if (fr != null) {
-                    fr.close();
+                if (fis != null) {
+                    fis.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -52,11 +59,12 @@ public class FileHelper {
         BufferedReader fr = null;
 
         try {
-            fr = new BufferedReader(new FileReader(file));
+            fr = new BufferedReader(new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8")));
             final String url = fr.readLine().trim();
             String line = "";
             while ((line = fr.readLine()) != null) {
-                stringFile.append(line.trim());
+                stringFile.append(line);
+                stringFile.append(NEW_LINE);
             }
 
             return new RIF(url, stringFile.toString());
@@ -83,18 +91,18 @@ public class FileHelper {
             file = new File(file.getAbsolutePath() + ".rif");
         }
 
-        FileWriter fr = null;
+        BufferedWriter bw = null;
         try {
-            fr = new FileWriter(file);
-            fr.write(url);
-            fr.write("\n\r");
-            fr.write(data);
+            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), Charset.forName("UTF-8")));
+            bw.write(url);
+            bw.newLine();
+            bw.write(data);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (fr != null) {
+            if (bw != null) {
                 try {
-                    fr.close();
+                    bw.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
