@@ -1,4 +1,4 @@
-package xml;
+package logic.xml;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

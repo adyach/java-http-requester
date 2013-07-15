@@ -1,4 +1,4 @@
-package main;
+package view;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -23,11 +23,14 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import requester.FileHelper;
-import requester.FileHelper.RIF;
-import requester.PostRequester;
-import requester.Response;
-import requester.XmlFormatter;
+import logic.FileHelper;
+import logic.PostRequester;
+import logic.Response;
+import logic.RifFilter;
+import logic.XmlFilter;
+import logic.XmlFormatter;
+import logic.FileHelper.RIF;
+
 
 public class MainWindow implements Runnable {
 
