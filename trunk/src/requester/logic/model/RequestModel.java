@@ -1,5 +1,7 @@
 package requester.logic.model;
 
+import java.io.File;
+
 import requester.controller.MainController;
 import requester.logic.XmlFormatter;
 
@@ -13,6 +15,8 @@ public class RequestModel extends Model {
     private static RequestModel model;
     private String url;
     private String request;
+    private File certificate;
+    private transient String password;
 
     private RequestModel() {
 
@@ -51,4 +55,28 @@ public class RequestModel extends Model {
         firePropertyChange(MainController.REQUEST_TEXT_PROPERTY, oldRequest, this.request);
     }
 
+    public File getCertificate() {
+
+        return certificate;
+    }
+
+    public void setCertificate(File certificate) {
+
+        File oldCertificate = this.certificate;
+        this.certificate = certificate;
+        firePropertyChange(MainController.CERT_PROPERTY, oldCertificate, this.certificate);
+    }
+
+    public String getPassword() {
+
+        return password;
+    }
+
+    public void setPassword(String password) {
+
+        String oldPassword = this.password;
+        this.password = password;
+        firePropertyChange(MainController.CERT_PWD_PROPERTY, oldPassword, this.password);
+
+    }
 }

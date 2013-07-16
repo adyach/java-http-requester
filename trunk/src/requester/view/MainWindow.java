@@ -10,6 +10,7 @@ import java.nio.charset.Charset;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -21,17 +22,21 @@ import javax.swing.JTextField;
 
 import requester.controller.MainController;
 
-public class MainWindow extends View implements Runnable {
+public class MainWindow implements Runnable, View {
 
-    private static final int KILLOBYTE = 1024;
     private static final String RESPONSE_CODE = "Response code: ";
     private static final String RESPONSE_SIZE = "Response size: ";
     private static final String RESPONSE_TIME = "Response time: ";
+    private static final String CERT = "Certificate: ";
+
     private static final String FORMAT_BUTTON_NAME = "Format";
     private static final String OPEN_BUTTON_NAME = "Open";
     private static final String SAVE_BUTTON_NAME = "Save";
     private static final String ABOUT_BUTTON_NAME = "About";
     private static final String SEND_BUTTON_NAME = "Send";
+    private static final String SETTINGS_BUTTON_NAME = "Settings";
+    private static final String ADD_CERT_BUTTON_NAME = "Add certificate";
+    private static final String REMOVE_CERT_BUTTON_NAME = "Remove certificate";
 
     private final JTextArea requestField = new JTextArea(10, 50);
     private final JTextField url = new JTextField(30);
@@ -40,6 +45,9 @@ public class MainWindow extends View implements Runnable {
     private static final JTextArea codeArea = new JTextArea(RESPONSE_CODE);
     private static final JTextArea sizeArea = new JTextArea(RESPONSE_SIZE);
     private static final JTextArea timeArea = new JTextArea(RESPONSE_TIME);
+    private static final JTextArea certArea = new JTextArea(CERT);
+
+    private static final JFrame frame = new JFrame("Http Requester");
 
     private final MainController controller;
 
@@ -70,6 +78,9 @@ public class MainWindow extends View implements Runnable {
         } else if (evt.getPropertyName().equals(MainController.REQUEST_TEXT_PROPERTY)) {
             final String text = evt.getNewValue().toString();
             requestField.setText(text);
+        } else if (evt.getPropertyName().equals(MainController.CERT_PROPERTY)) {
+            final String text = evt.getNewValue().toString();
+            certArea.setText(text);
         }
     }
 
@@ -81,7 +92,6 @@ public class MainWindow extends View implements Runnable {
 
     private JFrame createFrame() {
 
-        JFrame frame = new JFrame("Requester");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(createPane());
         frame.setJMenuBar(createMenu());
@@ -93,7 +103,7 @@ public class MainWindow extends View implements Runnable {
     private JPanel createPane() {
 
         final JPanel pane = new JPanel();
-        final JButton button = createButton();
+        final JButton button = createSendButton();
         button.setPreferredSize(new Dimension(500, 30));
 
         requestField.setText("Request");
@@ -108,6 +118,8 @@ public class MainWindow extends View implements Runnable {
         sizeArea.setColumns(15);
         timeArea.setEditable(false);
         timeArea.setColumns(15);
+        certArea.setEditable(false);
+        certArea.setColumns(15);
 
         pane.add(url);
         pane.add(progressBar);
@@ -117,6 +129,7 @@ public class MainWindow extends View implements Runnable {
         pane.add(codeArea);
         pane.add(sizeArea);
         pane.add(timeArea);
+        pane.add(certArea);
 
         return pane;
     }
@@ -124,6 +137,9 @@ public class MainWindow extends View implements Runnable {
     private JMenuBar createMenu() {
 
         final JMenuBar menu = new JMenuBar();
+        final JFileChooser certChooser = new JFileChooser();
+        certChooser.setFileFilter(new P12Filter());
+
         final JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileFilter(new XmlFilter());
         fileChooser.setFileFilter(new RifFilter());
@@ -138,6 +154,10 @@ public class MainWindow extends View implements Runnable {
                 fileChooser.showOpenDialog(null);
 
                 final File selectedFile = fileChooser.getSelectedFile();
+                if (selectedFile == null) {
+                    return;
+                }
+
                 controller.changeFile(selectedFile);
                 controller.openFile();
             }
@@ -153,10 +173,47 @@ public class MainWindow extends View implements Runnable {
                 fileChooser.showSaveDialog(null);
 
                 final File selectedFile = fileChooser.getSelectedFile();
+                if (selectedFile == null) {
+                    return;
+                }
+
                 controller.changeFile(selectedFile);
                 controller.executeSave();
             }
         });
+
+        final JMenuItem addCert = new JMenuItem(ADD_CERT_BUTTON_NAME);
+        addCert.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                certChooser.showOpenDialog(null);
+                final File selectedFile = certChooser.getSelectedFile();
+                if (selectedFile == null) {
+                    return;
+                }
+
+                controller.addCertificate(selectedFile);
+                new CertificatePassword(controller, frame.getLocation());
+            }
+        });
+
+        final JMenuItem removeCert = new JMenuItem(REMOVE_CERT_BUTTON_NAME);
+        removeCert.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                controller.addCertificate(null);
+                controller.addCertificatePassword(null);
+            }
+        });
+
+        final JMenu certMenu = new JMenu("Certificates");
+        certMenu.add(addCert);
+        certMenu.add(removeCert);
+        menu.add(certMenu);
 
         final JMenuItem format = new JMenuItem(FORMAT_BUTTON_NAME);
         menu.add(format);
@@ -167,6 +224,17 @@ public class MainWindow extends View implements Runnable {
 
                 controller.changeRequest(requestField.getText());
                 controller.changeResponse(responseField.getText());
+            }
+        });
+
+        final JMenuItem settings = new JMenuItem(SETTINGS_BUTTON_NAME);
+        menu.add(settings);
+        settings.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                new SettingsWindow();
             }
         });
 
@@ -191,7 +259,7 @@ public class MainWindow extends View implements Runnable {
         return menu;
     }
 
-    private JButton createButton() {
+    private JButton createSendButton() {
 
         JButton send = new JButton(SEND_BUTTON_NAME);
         send.addActionListener(new ActionListener() {
