@@ -7,9 +7,7 @@ import java.beans.PropertyChangeEvent;
  * @author Andrey Dyachkov
  * Created on 15.07.2013
  */
-public class View {
+public interface View {
 
-    public void modelPropertyChange(final PropertyChangeEvent evt) {
-
-    }
+    public void modelPropertyChange(final PropertyChangeEvent evt);
 }

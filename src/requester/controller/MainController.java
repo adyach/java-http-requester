@@ -18,6 +18,8 @@ public class MainController extends Controller {
     public static final String RESPONSE_CODE_PROPERTY = "ResponseCode";
     public static final String RESPONSE_TEXT_PROPERTY = "ResponseText";
     public static final String FILE_PROPERTY = "File";
+    public static final String CERT_PROPERTY = "Certificate";
+    public static final String CERT_PWD_PROPERTY = "Password";
 
     public void changeUrl(String url) {
 
@@ -54,7 +56,14 @@ public class MainController extends Controller {
         RequesterLogic.executeFileOpen();
     }
 
-    public void executeFormat() {
+    public void addCertificate(File cert) {
 
+        setModelProperty(CERT_PROPERTY, new File(cert.getAbsolutePath()));
     }
+
+    public void addCertificatePassword(String pwd) {
+
+        setModelProperty(CERT_PWD_PROPERTY, pwd);
+    }
+
 }
