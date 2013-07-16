@@ -1,4 +1,4 @@
-package controller;
+package requester.controller;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -6,8 +6,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import logic.model.Model;
-import view.View;
+import org.apache.log4j.Logger;
+
+import requester.logic.model.Model;
+import requester.view.View;
 
 /**
  * 
@@ -16,6 +18,8 @@ import view.View;
  */
 
 public abstract class Controller implements PropertyChangeListener {
+
+    private static final Logger log = Logger.getLogger(Controller.class);
 
     private final List<View> registeredViews;
     private final List<Model> registeredModels;
@@ -50,7 +54,7 @@ public abstract class Controller implements PropertyChangeListener {
 
     //  Use this to observe property changes from registered models
     //  and propagate them on to all the views.
-
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
 
         for (View view: registeredViews) {
@@ -77,7 +81,11 @@ public abstract class Controller implements PropertyChangeListener {
                 Method method = model.getClass().getMethod("set" + propertyName, new Class[] {newValue.getClass()});
                 method.invoke(model, newValue);
             } catch (Exception ex) {
-                //  Handle exception.
+                log.warn("No such method: set" + propertyName + "(" + newValue.getClass() + ") It is better check the called method.");
+                log.warn("Known methods:");
+                for (Method method: model.getClass().getDeclaredMethods()) {
+                    log.warn(method.getName());
+                }
             }
         }
     }

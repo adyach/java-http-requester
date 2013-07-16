@@ -1,4 +1,4 @@
-package logic.xml;
+package requester.logic.xml;
 
 import java.util.Collections;
 import java.util.HashMap;

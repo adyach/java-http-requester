@@ -1,4 +1,4 @@
-package logic.xml;
+package requester.logic.xml;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

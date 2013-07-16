@@ -1,4 +1,4 @@
-package logic.model;
+package requester.logic.model;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -13,7 +13,7 @@ public abstract class Model
 
     protected PropertyChangeSupport propertyChangeSupport;
 
-    public Model() {
+    Model() {
 
         propertyChangeSupport = new PropertyChangeSupport(this);
     }

@@ -1,4 +1,4 @@
-package logic;
+package requester.view;
 
 import java.io.File;
 
