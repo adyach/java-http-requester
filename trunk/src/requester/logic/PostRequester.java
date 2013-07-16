@@ -40,8 +40,12 @@ public class PostRequester implements Runnable {
 
         try {
             sendPost();
+        } catch (SSLHandshakeException e) {
+            log.error("Error happened while requesting server: ", e);
+            responseModel.setResponseText(e.getMessage());
         } catch (IOException e) {
             log.error("Error happened while requesting server: ", e);
+            responseModel.setResponseText(e.getMessage());
         }
     }
 
@@ -58,18 +62,18 @@ public class PostRequester implements Runnable {
                 SSLSocketFactory sslSocketFactory = null;
                 try {
                     sslSocketFactory = getSSLSocketFactory();
-                } catch (SSLHandshakeException e) {
-                    final int responseCode = ((HttpsURLConnection) connection).getResponseCode();
-                    final long responseTime = System.currentTimeMillis() - startTime;
-
-                    responseModel.setResponseText("Bad Certificate");
-                    responseModel.setResponseCode(responseCode);
-                    responseModel.setResponseSize(0);
-                    responseModel.setResponseTime(responseTime);
-
-                    return;
+                    //                } catch (SSLHandshakeException e) {
+                    //                    final int responseCode = ((HttpsURLConnection) connection).getResponseCode();
+                    //                    final long responseTime = System.currentTimeMillis() - startTime;
+                    //
+                    //                    responseModel.setResponseText("Bad Certificate");
+                    //                    responseModel.setResponseCode(responseCode);
+                    //                    responseModel.setResponseSize(0);
+                    //                    responseModel.setResponseTime(responseTime);
+                    //
+                    //                    throw new IOException("Bad Certificate", e);
                 } catch (Exception e) {
-                    log.error("Error happened while trying to connect via SSL: ", e);
+                    throw new IOException("Error happened while trying to connect via SSL", e);
                 }
 
                 ((HttpsURLConnection) connection).setSSLSocketFactory(sslSocketFactory);
@@ -82,7 +86,7 @@ public class PostRequester implements Runnable {
         conn.setDoInput(true);
         conn.setDoOutput(true);
 
-        final OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
+        OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
 
         writer.write(requestModel.getRequest());
         writer.flush();
