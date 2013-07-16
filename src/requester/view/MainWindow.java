@@ -178,6 +178,8 @@ public class MainWindow implements Runnable, View {
                 }
 
                 controller.changeFile(selectedFile);
+                controller.changeRequest(requestField.getText());
+                controller.changeUrl(url.getText());
                 controller.executeSave();
             }
         });
