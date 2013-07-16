@@ -1,4 +1,4 @@
-package logic;
+package requester.logic;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,46 +7,43 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.concurrent.Callable;
 
-public class PostRequester implements Callable<Response> {
+import requester.logic.model.RequestModel;
+import requester.logic.model.ResponseModel;
 
-    private Response response;
-    private final String requestingUrl;
-    private final String request;
+public class PostRequester implements Runnable {
 
-    public PostRequester(String requestingUrl, String request) {
+    private static final String METHOD = "POST";
+    private static final String CONTENT_TYPE = "Content-Type";
+    private static final String CONTENT_TYPE_XML = "application/xml;charset=UTF-8";
 
-        this.requestingUrl = requestingUrl.trim();
-        this.request = request.trim();
-    }
+    private final ResponseModel responseModel = ResponseModel.getInstance();
+    private final RequestModel requestModel = RequestModel.getInstance();
 
     @Override
-    public Response call() throws Exception {
+    public void run() {
 
         try {
             sendPost();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        return response;
     }
 
     private void sendPost() throws IOException {
 
         final long startTime = System.currentTimeMillis();
 
-        URL url = new URL(requestingUrl);
+        URL url = new URL(requestModel.getUrl());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/xml;charset=UTF-8");
+        conn.setRequestMethod(METHOD);
+        conn.setRequestProperty(CONTENT_TYPE, CONTENT_TYPE_XML);
         conn.setDoInput(true);
         conn.setDoOutput(true);
 
         OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
 
-        writer.write(request);
+        writer.write(requestModel.getRequest());
         writer.flush();
 
         String line;
@@ -61,6 +58,9 @@ public class PostRequester implements Callable<Response> {
         final int responseCode = conn.getResponseCode();
         final long responseTime = System.currentTimeMillis() - startTime;
 
-        response = new Response(sb.toString(), responseCode, sb.length(), responseTime);
+        responseModel.setResponseText(sb.toString());
+        responseModel.setResponseCode(responseCode);
+        responseModel.setResponseSize(sb.length());
+        responseModel.setResponseTime(responseTime);
     }
 }

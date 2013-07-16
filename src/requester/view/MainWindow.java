@@ -1,14 +1,11 @@
-package view;
+package requester.view;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -21,21 +18,12 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
-import logic.FileHelper;
-import logic.PostRequester;
-import logic.Response;
-import logic.RifFilter;
-import logic.XmlFilter;
-import logic.XmlFormatter;
-import logic.FileHelper.RIF;
+import requester.controller.MainController;
 
-
-public class MainWindow implements Runnable {
+public class MainWindow extends View implements Runnable {
 
     private static final int KILLOBYTE = 1024;
-    private static final String HTTP = "https://";
     private static final String RESPONSE_CODE = "Response code: ";
     private static final String RESPONSE_SIZE = "Response size: ";
     private static final String RESPONSE_TIME = "Response time: ";
@@ -44,47 +32,44 @@ public class MainWindow implements Runnable {
     private static final String SAVE_BUTTON_NAME = "Save";
     private static final String ABOUT_BUTTON_NAME = "About";
     private static final String SEND_BUTTON_NAME = "Send";
-    private static final String RIF_EXT = "rif";
-    private static final String XML_EXT = "xml";
 
     private final JTextArea requestField = new JTextArea(10, 50);
-    private final JTextField url = new JTextField(HTTP, 30);
+    private final JTextField url = new JTextField(30);
     private static final JTextArea responseField = new JTextArea(10, 50);
     private static final JProgressBar progressBar = new JProgressBar();
     private static final JTextArea codeArea = new JTextArea(RESPONSE_CODE);
     private static final JTextArea sizeArea = new JTextArea(RESPONSE_SIZE);
     private static final JTextArea timeArea = new JTextArea(RESPONSE_TIME);
 
-    private final ExecutorService executors = Executors.newFixedThreadPool(1);
-    private static Future<Response> futureResponse;
+    private final MainController controller;
 
-    public static void main(String[] args) throws Exception {
+    public MainWindow(MainController controller) {
 
-        SwingUtilities.invokeLater(new MainWindow());
+        this.controller = controller;
+        this.controller.addView(this);
+    }
 
-        while (true) {
-            Thread.sleep(1000);
+    @Override
+    public void modelPropertyChange(PropertyChangeEvent evt) {
 
-            try {
-                if (futureResponse != null && futureResponse.isDone()) {
-
-                    final Response response = futureResponse.get();
-                    responseField.setText(XmlFormatter.formatXml(response.getResponseText()));
-                    codeArea.append(String.valueOf(response.getResponseCode()));
-                    sizeArea.append(String.valueOf(response.getResponseSize() / KILLOBYTE) + " Kb");
-                    timeArea.append(String.valueOf(response.getResponseTime()) + " Ms");
-
-                    progressBar.setIndeterminate(false);
-                    futureResponse = null;
-                } else if (futureResponse != null && futureResponse.isCancelled()) {
-                    futureResponse = null;
-                    progressBar.setIndeterminate(false);
-                }
-            } catch (InterruptedException e1) {
-                e1.printStackTrace();
-            } catch (ExecutionException e1) {
-                e1.printStackTrace();
-            }
+        if (evt.getPropertyName().equals(MainController.RESPONSE_TIME_PROPERTY)) {
+            final String time = evt.getNewValue().toString();
+            timeArea.append(time + " Ms");
+        } else if (evt.getPropertyName().equals(MainController.RESPONSE_CODE_PROPERTY)) {
+            final String code = evt.getNewValue().toString();
+            codeArea.append(code);
+        } else if (evt.getPropertyName().equals(MainController.RESPONSE_SIZE_PROPERTY)) {
+            final String size = evt.getNewValue().toString();
+            sizeArea.append(size + " Bytes");
+        } else if (evt.getPropertyName().equals(MainController.RESPONSE_TEXT_PROPERTY)) {
+            final String text = evt.getNewValue().toString();
+            responseField.setText(text);
+        } else if (evt.getPropertyName().equals(MainController.REQUEST_URL_PROPERTY)) {
+            final String urlText = evt.getNewValue().toString();
+            url.setText(urlText);
+        } else if (evt.getPropertyName().equals(MainController.REQUEST_TEXT_PROPERTY)) {
+            final String text = evt.getNewValue().toString();
+            requestField.setText(text);
         }
     }
 
@@ -153,16 +138,8 @@ public class MainWindow implements Runnable {
                 fileChooser.showOpenDialog(null);
 
                 final File selectedFile = fileChooser.getSelectedFile();
-                String fileStr = null;
-                if (selectedFile.getName().endsWith(XML_EXT)) {
-                    fileStr = FileHelper.readFileXml(selectedFile);
-                } else if (selectedFile.getName().endsWith(RIF_EXT)) {
-                    final RIF rif = FileHelper.readFileRif(selectedFile);
-                    fileStr = rif.getData();
-                    url.setText(rif.getUrl());
-                }
-
-                requestField.setText(XmlFormatter.formatXml(fileStr));
+                controller.changeFile(selectedFile);
+                controller.openFile();
             }
         });
 
@@ -176,7 +153,8 @@ public class MainWindow implements Runnable {
                 fileChooser.showSaveDialog(null);
 
                 final File selectedFile = fileChooser.getSelectedFile();
-                FileHelper.saveFileRIF(selectedFile, requestField.getText(), url.getText());
+                controller.changeFile(selectedFile);
+                controller.executeSave();
             }
         });
 
@@ -187,8 +165,8 @@ public class MainWindow implements Runnable {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                requestField.setText(XmlFormatter.formatXml(requestField.getText()));
-                responseField.setText(XmlFormatter.formatXml(responseField.getText()));
+                controller.changeRequest(requestField.getText());
+                controller.changeResponse(responseField.getText());
             }
         });
 
@@ -200,9 +178,13 @@ public class MainWindow implements Runnable {
             public void actionPerformed(ActionEvent e) {
 
                 final String newLine = System.getProperty("line.separator");
-
-                final JOptionPane dialog = new JOptionPane("About");
-                dialog.showMessageDialog(null, "Requester v1.0." + newLine + " Andrey Dyachkov" + newLine + " andrey.dyachkov@gmail.com");
+                final StringBuilder sBuilder = new StringBuilder()
+                                .append("Requester v1.0.")
+                                .append(newLine)
+                                .append(" Andrey Dyachkov")
+                                .append(newLine)
+                                .append(" andrey.dyachkov@gmail.com");
+                JOptionPane.showMessageDialog(null, sBuilder, "About", JOptionPane.INFORMATION_MESSAGE);
             }
         });
 
@@ -211,8 +193,8 @@ public class MainWindow implements Runnable {
 
     private JButton createButton() {
 
-        JButton button = new JButton(SEND_BUTTON_NAME);
-        button.addActionListener(new ActionListener() {
+        JButton send = new JButton(SEND_BUTTON_NAME);
+        send.addActionListener(new ActionListener() {
 
             private int MIN_URL_LENGTH = 10;
 
@@ -228,17 +210,16 @@ public class MainWindow implements Runnable {
                 timeArea.setText(RESPONSE_TIME);
 
                 if (urlStr.isEmpty() || urlStr.length() < MIN_URL_LENGTH) {
-                    final JOptionPane dialog = new JOptionPane("Error");
-                    dialog.showMessageDialog(null, "URL can't be empty");
+                    JOptionPane.showMessageDialog(null, "URL can't be empty", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                final PostRequester postRequester = new PostRequester(urlStr, requestStr);
-                futureResponse = executors.submit(postRequester);
-                progressBar.setIndeterminate(true);
+                controller.changeUrl(urlStr);
+                controller.changeRequest(requestStr);
+                controller.executeRequest();
             }
         });
-        return button;
+        return send;
     }
 
     @Override

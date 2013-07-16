@@ -1,4 +1,4 @@
-package logic;
+package requester.logic;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

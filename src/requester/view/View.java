@@ -1,4 +1,4 @@
-package view;
+package requester.view;
 
 import java.beans.PropertyChangeEvent;
 

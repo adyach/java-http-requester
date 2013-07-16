@@ -1,4 +1,4 @@
-package logic.xml;
+package requester.logic.xml;
 
 
 public class Response extends Element {
