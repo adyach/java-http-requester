@@ -3,6 +3,11 @@ package requester.view;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.nio.charset.Charset;
@@ -55,9 +60,13 @@ public class MainWindow implements Runnable, View {
 
         this.controller = controller;
         this.controller.addView(this);
+        
+        setListeners();
     }
+    
 
-    @Override
+
+	@Override
     public void modelPropertyChange(PropertyChangeEvent evt) {
 
         if (evt.getPropertyName().equals(MainController.RESPONSE_TIME_PROPERTY)) {
@@ -297,5 +306,30 @@ public class MainWindow implements Runnable, View {
 
         createAndShowGui();
     }
+    
+    private void setListeners() {
+    	requestField.addMouseListener(new MouseAdapter() {
 
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2) {
+					final JFrame frame = new JFrame("Request");
+					frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+			        frame.add(requestField);
+			        frame.setVisible(true);
+			        
+			        frame.addMouseListener(new MouseAdapter() {
+
+						@Override
+						public void mouseClicked(MouseEvent e) {
+							if (e.getClickCount() == 2) {
+				        		frame.dispose();
+				        	}
+						}			   
+					});
+				}
+			}
+    		
+		});
+	}
 }
