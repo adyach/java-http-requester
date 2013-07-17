@@ -318,7 +318,9 @@ public class MainWindow implements Runnable, View {
                 if (e.getClickCount() == 2) {
                     final JFrame frame = new JFrame("Request");
                     frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-                    frame.add(requestField);
+                    final JTextArea text = new JTextArea();
+                    text.setText(requestField.getText());
+                    frame.add(text);
                     frame.setVisible(true);
                 }
             }
@@ -332,7 +334,9 @@ public class MainWindow implements Runnable, View {
                 if (e.getClickCount() == 2) {
                     final JFrame frame = new JFrame("Response");
                     frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-                    frame.add(responseField);
+                    final JTextArea text = new JTextArea();
+                    text.setText(responseField.getText());
+                    frame.add(text);
                     frame.setVisible(true);
                 }
             }
