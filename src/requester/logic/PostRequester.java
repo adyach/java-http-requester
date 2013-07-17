@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
@@ -57,7 +58,7 @@ public class PostRequester implements Runnable {
         final long startTime = System.currentTimeMillis();
 
         final URL url = new URL(requestModel.getUrl());
-        final HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        final URLConnection connection = url.openConnection();
 
         if (requestModel.getCertificate() != null) {
             if (connection instanceof HttpsURLConnection) {

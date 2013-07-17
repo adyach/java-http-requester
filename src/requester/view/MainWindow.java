@@ -41,7 +41,7 @@ public class MainWindow implements Runnable, View {
     private static final String REMOVE_CERT_BUTTON_NAME = "Remove certificate";
 
     private final JTextArea requestField = new JTextArea(10, 50);
-    private final JTextField url = new JTextField(30);
+    private final JTextField url = new JTextField("http://", 30);
     private static final JTextArea responseField = new JTextArea(10, 50);
     private static final JProgressBar progressBar = new JProgressBar();
     private static final JTextArea codeArea = new JTextArea(RESPONSE_CODE);
