@@ -58,12 +58,27 @@ public class MainController extends Controller {
 
     public void addCertificate(File cert) {
 
-        setModelProperty(CERT_PROPERTY, new File(cert.getAbsolutePath()));
+        File file = null;
+        if (cert != null) {
+            file = new File(cert.getAbsolutePath());
+        }
+
+        setModelProperty(CERT_PROPERTY, file);
     }
 
     public void addCertificatePassword(String pwd) {
 
         setModelProperty(CERT_PWD_PROPERTY, pwd);
+    }
+
+    public void removeCertificate() {
+
+        RequesterLogic.removeCertifivate();
+    }
+
+    public void removeCertificatePassword() {
+
+        RequesterLogic.removeCertifivatePassword();
     }
 
 }

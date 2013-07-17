@@ -3,11 +3,8 @@ package requester.view;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.nio.charset.Charset;
@@ -60,13 +57,11 @@ public class MainWindow implements Runnable, View {
 
         this.controller = controller;
         this.controller.addView(this);
-        
+
         setListeners();
     }
-    
 
-
-	@Override
+    @Override
     public void modelPropertyChange(PropertyChangeEvent evt) {
 
         if (evt.getPropertyName().equals(MainController.RESPONSE_TIME_PROPERTY)) {
@@ -88,6 +83,12 @@ public class MainWindow implements Runnable, View {
             final String text = evt.getNewValue().toString();
             requestField.setText(text);
         } else if (evt.getPropertyName().equals(MainController.CERT_PROPERTY)) {
+
+            if (evt.getNewValue() == null) {
+                certArea.setText(CERT);
+                return;
+            }
+
             final String text = evt.getNewValue().toString();
             certArea.setText(text);
         }
@@ -216,8 +217,8 @@ public class MainWindow implements Runnable, View {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                controller.addCertificate(null);
-                controller.addCertificatePassword(null);
+                controller.removeCertificate();
+                controller.removeCertificatePassword();
             }
         });
 
@@ -258,7 +259,7 @@ public class MainWindow implements Runnable, View {
 
                 final String newLine = System.getProperty("line.separator");
                 final StringBuilder sBuilder = new StringBuilder()
-                                .append("Requester v1.0.")
+                                .append("Requester v2.0.")
                                 .append(newLine)
                                 .append(" Andrey Dyachkov")
                                 .append(newLine)
@@ -306,30 +307,35 @@ public class MainWindow implements Runnable, View {
 
         createAndShowGui();
     }
-    
+
     private void setListeners() {
-    	requestField.addMouseListener(new MouseAdapter() {
 
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2) {
-					final JFrame frame = new JFrame("Request");
-					frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-			        frame.add(requestField);
-			        frame.setVisible(true);
-			        
-			        frame.addMouseListener(new MouseAdapter() {
+        requestField.addMouseListener(new MouseAdapter() {
 
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							if (e.getClickCount() == 2) {
-				        		frame.dispose();
-				        	}
-						}			   
-					});
-				}
-			}
-    		
-		});
-	}
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                if (e.getClickCount() == 2) {
+                    final JFrame frame = new JFrame("Request");
+                    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                    frame.add(requestField);
+                    frame.setVisible(true);
+                }
+            }
+        });
+
+        responseField.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                if (e.getClickCount() == 2) {
+                    final JFrame frame = new JFrame("Response");
+                    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                    frame.add(responseField);
+                    frame.setVisible(true);
+                }
+            }
+        });
+    }
 }

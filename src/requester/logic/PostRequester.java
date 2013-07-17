@@ -8,15 +8,18 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.security.KeyStore;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.log4j.Logger;
 
@@ -41,7 +44,7 @@ public class PostRequester implements Runnable {
         try {
             sendPost();
         } catch (SSLHandshakeException e) {
-            log.error("Error happened while requesting server: ", e);
+            log.error("Error happened while trying to connect via SSL (2): ", e);
             responseModel.setResponseText(e.getMessage());
         } catch (IOException e) {
             log.error("Error happened while requesting server: ", e);
@@ -54,45 +57,48 @@ public class PostRequester implements Runnable {
         final long startTime = System.currentTimeMillis();
 
         final URL url = new URL(requestModel.getUrl());
-        final URLConnection connection = url.openConnection();
+        final HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
 
         if (requestModel.getCertificate() != null) {
             if (connection instanceof HttpsURLConnection) {
 
+                log.info("Setting up https connection ...");
                 SSLSocketFactory sslSocketFactory = null;
                 try {
                     sslSocketFactory = getSSLSocketFactory();
-                    //                } catch (SSLHandshakeException e) {
-                    //                    final int responseCode = ((HttpsURLConnection) connection).getResponseCode();
-                    //                    final long responseTime = System.currentTimeMillis() - startTime;
-                    //
-                    //                    responseModel.setResponseText("Bad Certificate");
-                    //                    responseModel.setResponseCode(responseCode);
-                    //                    responseModel.setResponseSize(0);
-                    //                    responseModel.setResponseTime(responseTime);
-                    //
-                    //                    throw new IOException("Bad Certificate", e);
                 } catch (Exception e) {
-                    throw new IOException("Error happened while trying to connect via SSL", e);
+                    final int responseCode = ((HttpsURLConnection) connection).getResponseCode();
+                    final long responseTime = System.currentTimeMillis() - startTime;
+
+                    responseModel.setResponseText("Bad Certificate");
+                    responseModel.setResponseCode(responseCode);
+                    responseModel.setResponseSize(0);
+                    responseModel.setResponseTime(responseTime);
+
+                    throw new IOException("Error happened while trying to connect via SSL (1):", e);
                 }
 
                 ((HttpsURLConnection) connection).setSSLSocketFactory(sslSocketFactory);
+            } else {
+                log.info("Setting up http connection ...");
             }
         }
 
-        final HttpURLConnection conn = (HttpURLConnection) connection;
-        conn.setRequestMethod(METHOD);
-        conn.setRequestProperty(CONTENT_TYPE, CONTENT_TYPE_XML);
-        conn.setDoInput(true);
-        conn.setDoOutput(true);
+        ((HttpURLConnection) connection).setRequestMethod(METHOD);
+        ((HttpURLConnection) connection).setRequestProperty(CONTENT_TYPE, CONTENT_TYPE_XML);
+        ((HttpURLConnection) connection).setDoInput(true);
+        ((HttpURLConnection) connection).setDoOutput(true);
 
-        OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
+        log.info("Creating output writter ...");
+        OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
 
+        log.info("Sending request ...");
         writer.write(requestModel.getRequest());
         writer.flush();
 
+        log.info("Reading response ...");
         String line;
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), Charset.forName(ENCODING)));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), Charset.forName(ENCODING)));
         final StringBuilder sb = new StringBuilder();
         while ((line = reader.readLine()) != null) {
             sb.append(line);
@@ -100,7 +106,8 @@ public class PostRequester implements Runnable {
         writer.close();
         reader.close();
 
-        final int responseCode = conn.getResponseCode();
+        log.info("Refershing model ...");
+        final int responseCode = ((HttpURLConnection) connection).getResponseCode();
         final long responseTime = System.currentTimeMillis() - startTime;
 
         responseModel.setResponseText(sb.toString());
@@ -114,7 +121,7 @@ public class PostRequester implements Runnable {
         final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509"); //"SunX509", "SunJSSE"
         keyManagerFactory.init(getKeyStore(), requestModel.getPassword().toCharArray());
         final SSLContext sslContext = SSLContext.getInstance("TLS"); //TLS
-        sslContext.init(keyManagerFactory.getKeyManagers(), null, null);
+        sslContext.init(keyManagerFactory.getKeyManagers(), trustAllCerts, null);
 
         final SSLSocketFactory socketFactory = sslContext.getSocketFactory();
 
@@ -131,4 +138,26 @@ public class PostRequester implements Runnable {
 
         return keyStore;
     }
+
+    final X509TrustManager easyTrustManager = new X509TrustManager() {
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+
+            return null;
+        }
+    };
+
+    // Create a trust manager that does not validate certificate chains
+    final TrustManager[] trustAllCerts = new TrustManager[] {easyTrustManager};
 }
