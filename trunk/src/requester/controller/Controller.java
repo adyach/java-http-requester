@@ -81,11 +81,11 @@ public abstract class Controller implements PropertyChangeListener {
                 Method method = model.getClass().getMethod("set" + propertyName, new Class[] {newValue.getClass()});
                 method.invoke(model, newValue);
             } catch (Exception ex) {
-                log.warn("No such method: set" + propertyName + "(" + newValue.getClass() + ") It is better check the called method.");
-                log.warn("Known methods:");
-                for (Method method: model.getClass().getDeclaredMethods()) {
-                    log.warn(method.getName());
-                }
+                log.info("No such method: set" + propertyName + "(" + newValue.getClass() + ")");
+                //                log.warn("Known methods:");
+                //                for (Method method: model.getClass().getDeclaredMethods()) {
+                //                    log.warn(method.getName());
+                //                }
             }
         }
     }
