@@ -51,6 +51,8 @@ public class PostRequester implements Runnable {
             log.error("Error happened while requesting server: ", e);
             responseModel.setResponseText(e.getMessage());
         }
+
+        requestModel.setProgress(100);
     }
 
     private void sendPost() throws IOException {
@@ -59,6 +61,8 @@ public class PostRequester implements Runnable {
 
         final URL url = new URL(requestModel.getUrl());
         final URLConnection connection = url.openConnection();
+
+        requestModel.setProgress(10);
 
         if (requestModel.getCertificate() != null) {
             if (connection instanceof HttpsURLConnection) {
@@ -85,17 +89,25 @@ public class PostRequester implements Runnable {
             }
         }
 
+        requestModel.setProgress(30);
+
         ((HttpURLConnection) connection).setRequestMethod(METHOD);
         ((HttpURLConnection) connection).setRequestProperty(CONTENT_TYPE, CONTENT_TYPE_XML);
         ((HttpURLConnection) connection).setDoInput(true);
         ((HttpURLConnection) connection).setDoOutput(true);
 
+        requestModel.setProgress(40);
+
         log.info("Creating output writter ...");
         OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+
+        requestModel.setProgress(50);
 
         log.info("Sending request ...");
         writer.write(requestModel.getRequest());
         writer.flush();
+
+        requestModel.setProgress(60);
 
         log.info("Reading response ...");
         String line;
@@ -107,6 +119,8 @@ public class PostRequester implements Runnable {
         writer.close();
         reader.close();
 
+        requestModel.setProgress(90);
+
         log.info("Refershing model ...");
         final int responseCode = ((HttpURLConnection) connection).getResponseCode();
         final long responseTime = System.currentTimeMillis() - startTime;
@@ -115,6 +129,8 @@ public class PostRequester implements Runnable {
         responseModel.setResponseCode(responseCode);
         responseModel.setResponseSize(sb.length());
         responseModel.setResponseTime(responseTime);
+
+        requestModel.setProgress(100);
     }
 
     private SSLSocketFactory getSSLSocketFactory() throws Exception {

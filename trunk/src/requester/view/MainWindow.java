@@ -29,7 +29,7 @@ public class MainWindow implements Runnable, View {
     private static final String RESPONSE_CODE = "Response code: ";
     private static final String RESPONSE_SIZE = "Response size: ";
     private static final String RESPONSE_TIME = "Response time: ";
-    private static final String CERT = "Certificate: ";
+    private static final String CERT = "Certificate: None";
 
     private static final String FORMAT_BUTTON_NAME = "Format";
     private static final String OPEN_BUTTON_NAME = "Open";
@@ -66,12 +66,21 @@ public class MainWindow implements Runnable, View {
 
         if (evt.getPropertyName().equals(MainController.RESPONSE_TIME_PROPERTY)) {
             final String time = evt.getNewValue().toString();
+            if (time.isEmpty()) {
+                return;
+            }
             timeArea.append(time + " Ms");
         } else if (evt.getPropertyName().equals(MainController.RESPONSE_CODE_PROPERTY)) {
             final String code = evt.getNewValue().toString();
+            if (code.isEmpty()) {
+                return;
+            }
             codeArea.append(code);
         } else if (evt.getPropertyName().equals(MainController.RESPONSE_SIZE_PROPERTY)) {
             final String size = evt.getNewValue().toString();
+            if (size.isEmpty()) {
+                return;
+            }
             sizeArea.append(size + " Bytes");
         } else if (evt.getPropertyName().equals(MainController.RESPONSE_TEXT_PROPERTY)) {
             final String text = evt.getNewValue().toString();
@@ -91,6 +100,8 @@ public class MainWindow implements Runnable, View {
 
             final String text = evt.getNewValue().toString();
             certArea.setText(text);
+        } else if (evt.getPropertyName().equals(MainController.REQUEST_PROGRESS_PROPERTY)) {
+            progressBar.setValue(Integer.valueOf(evt.getNewValue().toString()));
         }
     }
 
@@ -115,6 +126,8 @@ public class MainWindow implements Runnable, View {
         final JPanel pane = new JPanel();
         final JButton button = createSendButton();
         button.setPreferredSize(new Dimension(500, 30));
+
+        progressBar.setMaximum(100);
 
         requestField.setText("Request");
         responseField.setText("Response");
@@ -155,7 +168,6 @@ public class MainWindow implements Runnable, View {
         fileChooser.setFileFilter(new RifFilter());
 
         final JMenuItem open = new JMenuItem(OPEN_BUTTON_NAME);
-        menu.add(open);
         open.addActionListener(new ActionListener() {
 
             @Override
@@ -174,7 +186,6 @@ public class MainWindow implements Runnable, View {
         });
 
         final JMenuItem save = new JMenuItem(SAVE_BUTTON_NAME);
-        menu.add(save);
         save.addActionListener(new ActionListener() {
 
             @Override
@@ -222,13 +233,15 @@ public class MainWindow implements Runnable, View {
             }
         });
 
+        final JMenu fileMenu = new JMenu("File");
+        menu.add(fileMenu);
+
         final JMenu certMenu = new JMenu("Certificates");
         certMenu.add(addCert);
         certMenu.add(removeCert);
         menu.add(certMenu);
 
         final JMenuItem format = new JMenuItem(FORMAT_BUTTON_NAME);
-        menu.add(format);
         format.addActionListener(new ActionListener() {
 
             @Override
@@ -240,7 +253,6 @@ public class MainWindow implements Runnable, View {
         });
 
         final JMenuItem settings = new JMenuItem(SETTINGS_BUTTON_NAME);
-        menu.add(settings);
         settings.addActionListener(new ActionListener() {
 
             @Override
@@ -251,7 +263,6 @@ public class MainWindow implements Runnable, View {
         });
 
         final JMenuItem about = new JMenuItem(ABOUT_BUTTON_NAME);
-        menu.add(about);
         about.addActionListener(new ActionListener() {
 
             @Override
@@ -267,6 +278,12 @@ public class MainWindow implements Runnable, View {
                 JOptionPane.showMessageDialog(null, sBuilder, "About", JOptionPane.INFORMATION_MESSAGE);
             }
         });
+
+        fileMenu.add(open);
+        fileMenu.add(save);
+        fileMenu.add(settings);
+        fileMenu.add(format);
+        fileMenu.add(about);
 
         return menu;
     }
@@ -288,6 +305,7 @@ public class MainWindow implements Runnable, View {
                 codeArea.setText(RESPONSE_CODE);
                 sizeArea.setText(RESPONSE_SIZE);
                 timeArea.setText(RESPONSE_TIME);
+                progressBar.setValue(0);
 
                 if (urlStr.isEmpty() || urlStr.length() < MIN_URL_LENGTH) {
                     JOptionPane.showMessageDialog(null, "URL can't be empty", "Error", JOptionPane.ERROR_MESSAGE);

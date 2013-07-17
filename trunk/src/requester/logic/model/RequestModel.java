@@ -17,6 +17,7 @@ public class RequestModel extends Model {
     private String request;
     private File certificate;
     private transient String password;
+    private int progress;
 
     private RequestModel() {
 
@@ -77,6 +78,19 @@ public class RequestModel extends Model {
         String oldPassword = this.password;
         this.password = password;
         firePropertyChange(MainController.CERT_PWD_PROPERTY, oldPassword, this.password);
+    }
+
+    public int getProgress() {
+
+        return progress;
+    }
+
+    public void setProgress(int progress) {
+
+        int oldProgress = this.progress;
+        this.progress = progress;
+        firePropertyChange(MainController.REQUEST_PROGRESS_PROPERTY, oldProgress, this.progress);
 
     }
+
 }
