@@ -20,6 +20,7 @@ public class MainController extends Controller {
     public static final String FILE_PROPERTY = "File";
     public static final String CERT_PROPERTY = "Certificate";
     public static final String CERT_PWD_PROPERTY = "Password";
+    public static final String REQUEST_PROGRESS_PROPERTY = "Progress";
 
     public void changeUrl(String url) {
 
