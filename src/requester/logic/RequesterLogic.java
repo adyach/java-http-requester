@@ -18,8 +18,15 @@ public class RequesterLogic {
 
     public static void executeRequest() {
 
-        final PostRequester postRequester = new PostRequester();
-        executors.submit(postRequester);
+        for (int i = 0; i < requestModel.getCycles(); i++) {
+            final PostRequester postRequester = new PostRequester();
+            executors.submit(postRequester);
+        }
+    }
+
+    public static void stopRequest() {
+
+        executors.shutdownNow();
     }
 
     public static void executeFileSave() {
@@ -40,5 +47,15 @@ public class RequesterLogic {
     public static void removeCertifivatePassword() {
 
         requestModel.setPassword(null);
+    }
+
+    public static int getCyclesCount() {
+
+        return requestModel.getCycles();
+    }
+
+    public static int getTimeout() {
+
+        return requestModel.getTimeout();
     }
 }

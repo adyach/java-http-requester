@@ -29,11 +29,13 @@ public class MainWindow implements Runnable, View {
     private static final String RESPONSE_CODE = "Response code: ";
     private static final String RESPONSE_SIZE = "Response size: ";
     private static final String RESPONSE_TIME = "Response time: ";
+    private static final String CYCLES_COUNT = "Cycle: ";
     private static final String CERT = "Certificate: None";
 
     private static final String FORMAT_BUTTON_NAME = "Format";
     private static final String OPEN_BUTTON_NAME = "Open";
     private static final String SAVE_BUTTON_NAME = "Save";
+    private static final String STOP_BUTTON_NAME = "Stop";
     private static final String ABOUT_BUTTON_NAME = "About";
     private static final String SEND_BUTTON_NAME = "Send";
     private static final String SETTINGS_BUTTON_NAME = "Settings";
@@ -48,6 +50,7 @@ public class MainWindow implements Runnable, View {
     private static final JTextArea sizeArea = new JTextArea(RESPONSE_SIZE);
     private static final JTextArea timeArea = new JTextArea(RESPONSE_TIME);
     private static final JTextArea certArea = new JTextArea(CERT);
+    private static final JTextArea cycleArea = new JTextArea(CYCLES_COUNT);
 
     private static final JFrame frame = new JFrame("Http Requester");
 
@@ -69,19 +72,20 @@ public class MainWindow implements Runnable, View {
             if (time.isEmpty()) {
                 return;
             }
-            timeArea.append(time + " Ms");
+
+            timeArea.setText(RESPONSE_TIME + time + " Ms");
         } else if (evt.getPropertyName().equals(MainController.RESPONSE_CODE_PROPERTY)) {
             final String code = evt.getNewValue().toString();
             if (code.isEmpty()) {
                 return;
             }
-            codeArea.append(code);
+            codeArea.setText(RESPONSE_CODE + code);
         } else if (evt.getPropertyName().equals(MainController.RESPONSE_SIZE_PROPERTY)) {
             final String size = evt.getNewValue().toString();
             if (size.isEmpty()) {
                 return;
             }
-            sizeArea.append(size + " Bytes");
+            sizeArea.setText(RESPONSE_SIZE + size + " Bytes");
         } else if (evt.getPropertyName().equals(MainController.RESPONSE_TEXT_PROPERTY)) {
             final String text = evt.getNewValue().toString();
             responseField.setText(text);
@@ -100,8 +104,14 @@ public class MainWindow implements Runnable, View {
 
             final String text = evt.getNewValue().toString();
             certArea.setText(text);
-        } else if (evt.getPropertyName().equals(MainController.REQUEST_PROGRESS_PROPERTY)) {
+        } else if (evt.getPropertyName().equals(MainController.PROGRESS_PROPERTY)) {
             progressBar.setValue(Integer.valueOf(evt.getNewValue().toString()));
+        } else if (evt.getPropertyName().equals(MainController.CURRENT_CYCLES_PROPERTY)) {
+            final String count = evt.getNewValue().toString();
+            if (count.isEmpty()) {
+                return;
+            }
+            cycleArea.setText(CYCLES_COUNT + count);
         }
     }
 
@@ -116,7 +126,7 @@ public class MainWindow implements Runnable, View {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(createPane());
         frame.setJMenuBar(createMenu());
-        frame.setSize(600, 500);
+        frame.setSize(600, 550);
         frame.setResizable(false);
         return frame;
     }
@@ -124,8 +134,10 @@ public class MainWindow implements Runnable, View {
     private JPanel createPane() {
 
         final JPanel pane = new JPanel();
-        final JButton button = createSendButton();
-        button.setPreferredSize(new Dimension(500, 30));
+        final JButton send = createSendButton();
+        send.setPreferredSize(new Dimension(500, 30));
+        final JButton stop = createStopButton();
+        stop.setPreferredSize(new Dimension(500, 30));
 
         progressBar.setMaximum(100);
 
@@ -143,16 +155,20 @@ public class MainWindow implements Runnable, View {
         timeArea.setColumns(15);
         certArea.setEditable(false);
         certArea.setColumns(15);
+        cycleArea.setEditable(false);
+        cycleArea.setColumns(15);
 
         pane.add(url);
         pane.add(progressBar);
         pane.add(scrollRequest);
         pane.add(scrollResponse);
-        pane.add(button);
+        pane.add(send);
+        pane.add(stop);
         pane.add(codeArea);
         pane.add(sizeArea);
         pane.add(timeArea);
         pane.add(certArea);
+        pane.add(cycleArea);
 
         return pane;
     }
@@ -258,7 +274,7 @@ public class MainWindow implements Runnable, View {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                new SettingsWindow();
+                new SettingsWindow(controller, frame.getLocation());
             }
         });
 
@@ -270,7 +286,7 @@ public class MainWindow implements Runnable, View {
 
                 final String newLine = System.getProperty("line.separator");
                 final StringBuilder sBuilder = new StringBuilder()
-                                .append("Requester v2.0.")
+                                .append("Requester v2.2")
                                 .append(newLine)
                                 .append(" Andrey Dyachkov")
                                 .append(newLine)
@@ -317,7 +333,22 @@ public class MainWindow implements Runnable, View {
                 controller.executeRequest();
             }
         });
+
         return send;
+    }
+
+    private JButton createStopButton() {
+
+        JButton stop = new JButton(STOP_BUTTON_NAME);
+        stop.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                controller.stopRequest();
+            }
+        });
+        return stop;
     }
 
     @Override

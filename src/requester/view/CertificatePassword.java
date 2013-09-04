@@ -20,7 +20,6 @@ import requester.controller.MainController;
 public class CertificatePassword extends JFrame implements View {
 
     private static final long serialVersionUID = 3492422123079354721L;
-    private final JTextField pwdField = new JTextField(10);
     private final MainController controller;
 
     public CertificatePassword(MainController controller, Point location) {
@@ -37,7 +36,8 @@ public class CertificatePassword extends JFrame implements View {
     private JPanel createPane() {
 
         final JPanel pane = new JPanel();
-        final JButton confirmButton = new JButton("OK");
+        final JTextField pwdField = new JTextField(10);
+        final JButton confirmButton = new JButton("Save");
         confirmButton.addActionListener(new ActionListener() {
 
             @Override

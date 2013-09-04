@@ -31,7 +31,6 @@ public class PostRequester implements Runnable {
 
     private static final Logger log = Logger.getLogger(PostRequester.class);
 
-    private static final String METHOD = "POST";
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String CONTENT_TYPE_XML = "application/xml;charset=UTF-8";
     private static final String ENCODING = "UTF-8";
@@ -91,21 +90,25 @@ public class PostRequester implements Runnable {
 
         requestModel.setProgress(30);
 
-        ((HttpURLConnection) connection).setRequestMethod(METHOD);
-        ((HttpURLConnection) connection).setRequestProperty(CONTENT_TYPE, CONTENT_TYPE_XML);
+        ((HttpURLConnection) connection).setConnectTimeout(requestModel.getTimeout());
+        ((HttpURLConnection) connection).setRequestMethod(requestModel.getMethod());
         ((HttpURLConnection) connection).setDoInput(true);
         ((HttpURLConnection) connection).setDoOutput(true);
 
-        requestModel.setProgress(40);
+        if (requestModel.getMethod().equals("POST")) {
+            ((HttpURLConnection) connection).setRequestProperty(CONTENT_TYPE, CONTENT_TYPE_XML);
+            requestModel.setProgress(40);
 
-        log.info("Creating output writter ...");
-        OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+            log.info("Creating output writter ...");
+            OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
 
-        requestModel.setProgress(50);
+            requestModel.setProgress(50);
 
-        log.info("Sending request ...");
-        writer.write(requestModel.getRequest());
-        writer.flush();
+            log.info("Sending request ...");
+            writer.write(requestModel.getRequest());
+            writer.flush();
+            writer.close();
+        }
 
         requestModel.setProgress(60);
 
@@ -116,7 +119,6 @@ public class PostRequester implements Runnable {
         while ((line = reader.readLine()) != null) {
             sb.append(line);
         }
-        writer.close();
         reader.close();
 
         requestModel.setProgress(90);
@@ -131,6 +133,7 @@ public class PostRequester implements Runnable {
         responseModel.setResponseTime(responseTime);
 
         requestModel.setProgress(100);
+        requestModel.setCurrentCycles(requestModel.getCurrentCycles() + 1);
     }
 
     private SSLSocketFactory getSSLSocketFactory() throws Exception {
