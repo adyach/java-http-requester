@@ -20,8 +20,8 @@ public class RequestModel extends Model {
     private int progress;
     private int timeout = 60 * 1000;
     private String method = "POST";
-    private int cycles = 1;
-    private int currentCycle;
+    private long cycles = 1;
+    private long currentCycle;
 
     private RequestModel() {
 
@@ -120,26 +120,26 @@ public class RequestModel extends Model {
         firePropertyChange(MainController.METHOD_PROPERTY, oldMethod, this.method);
     }
 
-    public int getCycles() {
+    public long getCycles() {
 
         return cycles;
     }
 
-    public void setCycles(Integer cycles) {
+    public void setCycles(Long cycles) {
 
-        int oldCycles = this.cycles;
+        long oldCycles = this.cycles;
         this.cycles = cycles;
         firePropertyChange(MainController.CYCLES_PROPERTY, oldCycles, this.cycles);
     }
 
-    public int getCurrentCycles() {
+    public long getCurrentCycles() {
 
         return currentCycle;
     }
 
-    public void setCurrentCycles(Integer cycles) {
+    public void setCurrentCycles(Long cycles) {
 
-        int oldCurrentCycle = this.currentCycle;
+        long oldCurrentCycle = this.currentCycle;
         this.currentCycle = cycles;
         firePropertyChange(MainController.CURRENT_CYCLES_PROPERTY, oldCurrentCycle, this.currentCycle);
     }
