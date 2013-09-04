@@ -101,12 +101,12 @@ public class MainController extends Controller {
         setModelProperty(METHOD_PROPERTY, method);
     }
 
-    public void changeCycles(int cycles) {
+    public void changeCycles(long cycles) {
 
         setModelProperty(CYCLES_PROPERTY, cycles);
     }
 
-    public int getCurrentCyclesCount() {
+    public long getCurrentCyclesCount() {
 
         return RequesterLogic.getCyclesCount();
     }

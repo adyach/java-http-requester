@@ -32,7 +32,7 @@ public class SettingsWindow extends JFrame implements View {
         this.controller = controller;
         setTitle("Settings");
         setContentPane(createPane());
-        setSize(150, 120);
+        setSize(180, 150);
         setResizable(false);
         setVisible(true);
         setLocation(location);
@@ -45,7 +45,7 @@ public class SettingsWindow extends JFrame implements View {
         final JTextField timeout = new JTextField(3);
         final JLabel methodLabel = new JLabel("Method");
         final JComboBox methods = new JComboBox(new String[] {"POST", "GET"});
-        final JLabel cyclesLabel = new JLabel("Timeout");
+        final JLabel cyclesLabel = new JLabel("Cycles (0 - infinite)");
         final JTextField cycles = new JTextField(3);
 
         final JButton confirmButton = new JButton("Save");
@@ -62,7 +62,7 @@ public class SettingsWindow extends JFrame implements View {
 
                 controller.changeTimeout(Integer.valueOf(timeout.getText()));
                 controller.changeMethod(String.valueOf(methods.getSelectedItem()));
-                controller.changeCycles(Integer.valueOf(cycles.getText()));
+                controller.changeCycles(Long.valueOf(cycles.getText()));
 
                 dispose();
             }

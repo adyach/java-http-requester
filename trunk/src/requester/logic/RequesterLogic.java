@@ -12,20 +12,66 @@ import requester.logic.model.RequestModel;
  */
 public class RequesterLogic {
 
-    private static final ExecutorService executors = Executors.newFixedThreadPool(1);
+    private static ExecutorService executors = Executors.newFixedThreadPool(1);
     private static final FileHelper fileHelper = new FileHelper();
     private static final RequestModel requestModel = RequestModel.getInstance();
+    private static final long INFINITE_CYCLE = 0;
+    private static boolean started = true;
 
-    public static void executeRequest() {
+    public synchronized static void executeRequest() {
 
-        for (int i = 0; i < requestModel.getCycles(); i++) {
-            final PostRequester postRequester = new PostRequester();
-            executors.submit(postRequester);
+        requestModel.setCurrentCycles(0L);
+
+        if (executors.isTerminated()) {
+            executors = Executors.newFixedThreadPool(1);
+        }
+
+        if (requestModel.getCycles() == INFINITE_CYCLE) {
+            started = true;
+
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+
+                    while (started) {
+
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+                        final PostRequester postRequester = new PostRequester();
+                        executors.submit(postRequester);
+                    }
+                }
+            }).start();
+        } else {
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    for (long i = 0; i < requestModel.getCycles(); i++) {
+                        final PostRequester postRequester = new PostRequester();
+                        executors.submit(postRequester);
+                    }
+                }
+            }).start();
+
         }
     }
 
-    public static void stopRequest() {
+    public synchronized static void stopRequest() {
 
+        started = false;
         executors.shutdownNow();
     }
 
@@ -49,7 +95,7 @@ public class RequesterLogic {
         requestModel.setPassword(null);
     }
 
-    public static int getCyclesCount() {
+    public static long getCyclesCount() {
 
         return requestModel.getCycles();
     }
