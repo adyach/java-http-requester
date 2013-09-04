@@ -18,6 +18,10 @@ public class RequestModel extends Model {
     private File certificate;
     private transient String password;
     private int progress;
+    private int timeout = 60 * 1000;
+    private String method = "POST";
+    private int cycles = 1;
+    private int currentCycle;
 
     private RequestModel() {
 
@@ -89,8 +93,55 @@ public class RequestModel extends Model {
 
         int oldProgress = this.progress;
         this.progress = progress;
-        firePropertyChange(MainController.REQUEST_PROGRESS_PROPERTY, oldProgress, this.progress);
+        firePropertyChange(MainController.PROGRESS_PROPERTY, oldProgress, this.progress);
+    }
 
+    public int getTimeout() {
+
+        return timeout;
+    }
+
+    public void setTimeout(Integer timeout) {
+
+        int oldTimeout = this.timeout;
+        this.timeout = timeout;
+        firePropertyChange(MainController.TIMEOUT_PROPERTY, oldTimeout, this.timeout);
+    }
+
+    public String getMethod() {
+
+        return method;
+    }
+
+    public void setMethod(String method) {
+
+        String oldMethod = this.method;
+        this.method = method;
+        firePropertyChange(MainController.METHOD_PROPERTY, oldMethod, this.method);
+    }
+
+    public int getCycles() {
+
+        return cycles;
+    }
+
+    public void setCycles(Integer cycles) {
+
+        int oldCycles = this.cycles;
+        this.cycles = cycles;
+        firePropertyChange(MainController.CYCLES_PROPERTY, oldCycles, this.cycles);
+    }
+
+    public int getCurrentCycles() {
+
+        return currentCycle;
+    }
+
+    public void setCurrentCycles(Integer cycles) {
+
+        int oldCurrentCycle = this.currentCycle;
+        this.currentCycle = cycles;
+        firePropertyChange(MainController.CURRENT_CYCLES_PROPERTY, oldCurrentCycle, this.currentCycle);
     }
 
 }

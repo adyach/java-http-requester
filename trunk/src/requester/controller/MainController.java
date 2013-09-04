@@ -20,7 +20,11 @@ public class MainController extends Controller {
     public static final String FILE_PROPERTY = "File";
     public static final String CERT_PROPERTY = "Certificate";
     public static final String CERT_PWD_PROPERTY = "Password";
-    public static final String REQUEST_PROGRESS_PROPERTY = "Progress";
+    public static final String PROGRESS_PROPERTY = "Progress";
+    public static final String TIMEOUT_PROPERTY = "Timeout";
+    public static final String METHOD_PROPERTY = "Method";
+    public static final String CYCLES_PROPERTY = "Cycles";
+    public static final String CURRENT_CYCLES_PROPERTY = "CurrentCycles";
 
     public void changeUrl(String url) {
 
@@ -45,6 +49,11 @@ public class MainController extends Controller {
     public void executeRequest() {
 
         RequesterLogic.executeRequest();
+    }
+
+    public void stopRequest() {
+
+        RequesterLogic.stopRequest();
     }
 
     public void executeSave() {
@@ -80,6 +89,31 @@ public class MainController extends Controller {
     public void removeCertificatePassword() {
 
         RequesterLogic.removeCertifivatePassword();
+    }
+
+    public void changeTimeout(int timeout) {
+
+        setModelProperty(TIMEOUT_PROPERTY, timeout);
+    }
+
+    public void changeMethod(String method) {
+
+        setModelProperty(METHOD_PROPERTY, method);
+    }
+
+    public void changeCycles(int cycles) {
+
+        setModelProperty(CYCLES_PROPERTY, cycles);
+    }
+
+    public int getCurrentCyclesCount() {
+
+        return RequesterLogic.getCyclesCount();
+    }
+
+    public int getCurrentTimeout() {
+
+        return RequesterLogic.getTimeout();
     }
 
 }
