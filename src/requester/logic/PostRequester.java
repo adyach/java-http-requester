@@ -14,10 +14,12 @@ import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -65,17 +67,16 @@ public class PostRequester implements Runnable {
 
 		if (requestModel.getCertificate() != null) {
 			if (connection instanceof HttpsURLConnection) {
-//				System.setProperty("java.protocol.handler.pkgs", "com.sun.net.ssl.internal.www.protocol");
-//				HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-//
-//					@Override
-//					public boolean verify(String hostname, SSLSession session) {
-//						// TODO Auto-generated method stub
-//						return true;
-//					}
-//				});
 				log.info("Setting up https connection ...");
 				SSLSocketFactory sslSocketFactory = null;
+				((HttpsURLConnection) connection).setHostnameVerifier(new HostnameVerifier() {
+
+					@Override
+					public boolean verify(String hostname, SSLSession session) {
+						return true;
+					}
+				});
+
 				try {
 					sslSocketFactory = getSSLSocketFactory();
 				} catch (Exception e) {
@@ -190,7 +191,7 @@ public class PostRequester implements Runnable {
 			return null;
 		}
 	};
-	
+
 	// Create a trust manager that does not validate certificate chains
 	final TrustManager[] trustAllCerts = new TrustManager[] { easyTrustManager };
 }
