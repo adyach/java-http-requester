@@ -69,13 +69,13 @@ public class PostRequester implements Runnable {
 			if (connection instanceof HttpsURLConnection) {
 				log.info("Setting up https connection ...");
 				SSLSocketFactory sslSocketFactory = null;
-				((HttpsURLConnection) connection).setHostnameVerifier(new HostnameVerifier() {
-
-					@Override
-					public boolean verify(String hostname, SSLSession session) {
-						return true;
-					}
-				});
+				// ((HttpsURLConnection) connection).setHostnameVerifier(new HostnameVerifier() {
+				//
+				// @Override
+				// public boolean verify(String hostname, SSLSession session) {
+				// return true;
+				// }
+				// });
 
 				try {
 					sslSocketFactory = getSSLSocketFactory();
@@ -149,6 +149,27 @@ public class PostRequester implements Runnable {
 		requestModel.setCurrentCycles(requestModel.getCurrentCycles() + 1);
 	}
 
+	private final X509TrustManager easyTrustManager = new X509TrustManager() {
+
+		@Override
+		public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+		}
+
+		@Override
+		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+		}
+
+		@Override
+		public X509Certificate[] getAcceptedIssuers() {
+
+			return null;
+		}
+		
+	};
+
+	// Create a trust manager that does not validate certificate chains
+	private final TrustManager[] trustAllCerts = new TrustManager[] { easyTrustManager };
+	
 	private SSLSocketFactory getSSLSocketFactory() throws Exception {
 
 		final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509"); // "SunX509",
@@ -173,25 +194,4 @@ public class PostRequester implements Runnable {
 		return keyStore;
 	}
 
-	final X509TrustManager easyTrustManager = new X509TrustManager() {
-
-		@Override
-		public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			return;
-		}
-
-		@Override
-		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-			return;
-		}
-
-		@Override
-		public X509Certificate[] getAcceptedIssuers() {
-
-			return null;
-		}
-	};
-
-	// Create a trust manager that does not validate certificate chains
-	final TrustManager[] trustAllCerts = new TrustManager[] { easyTrustManager };
 }
