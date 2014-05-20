@@ -10,12 +10,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.util.Map;
 
 import requester.logic.model.FileModel;
+import requester.logic.model.HttpHeadersModel;
 import requester.logic.model.RequestModel;
 import requester.logic.model.Rif;
 
 /**
+ * 
+ * Helps to save and load files for the requester.
  * 
  * @author Andrey Dyachkov
  * Created on 02.07.2013
@@ -42,6 +46,15 @@ public class FileHelper {
             bw.write(requestModel.getUrl());
             bw.newLine();
             bw.write(requestModel.getRequest());
+            bw.newLine();
+            bw.newLine();
+            Map<String, String> headers = HttpHeadersModel.getInstance().getHttpHeaders();
+            for (String key : headers.keySet()) {
+                bw.write(key);
+                bw.write("=");
+                bw.write(headers.get(key));
+                bw.newLine();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -67,6 +80,7 @@ public class FileHelper {
             final Rif rif = readFileRif(file);
             requestModel.setRequest(rif.getData());
             requestModel.setUrl(rif.getUrl());
+            HttpHeadersModel.getInstance().setHeaders(rif.getHeaders());
         }
 
     }

@@ -12,6 +12,7 @@ import requester.logic.model.Model;
 import requester.view.View;
 
 /**
+ * Controller.
  * 
  * @author Andrey Dyachkov
  * Created on 15.07.2013
@@ -20,24 +21,20 @@ import requester.view.View;
 public abstract class Controller implements PropertyChangeListener {
 
     private static final Logger log = Logger.getLogger(Controller.class);
-
     private final List<View> registeredViews;
     private final List<Model> registeredModels;
 
     public Controller() {
-
         registeredViews = new ArrayList<View>();
         registeredModels = new ArrayList<Model>();
     }
 
     public void addModel(Model model) {
-
         registeredModels.add(model);
         model.addPropertyChangeListener(this);
     }
 
     public void removeModel(Model model) {
-
         registeredModels.remove(model);
         model.removePropertyChangeListener(this);
     }
@@ -56,7 +53,6 @@ public abstract class Controller implements PropertyChangeListener {
     //  and propagate them on to all the views.
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-
         for (View view: registeredViews) {
             view.modelPropertyChange(evt);
         }

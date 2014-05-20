@@ -13,19 +13,19 @@ import java.nio.charset.Charset;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Map;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.log4j.Logger;
 
+import requester.logic.model.HttpHeadersModel;
 import requester.logic.model.RequestModel;
 import requester.logic.model.ResponseModel;
 
@@ -102,7 +102,11 @@ public class PostRequester implements Runnable {
 		((HttpURLConnection) connection).setRequestMethod(requestModel.getMethod());
 		((HttpURLConnection) connection).setDoInput(true);
 		((HttpURLConnection) connection).setDoOutput(true);
-
+		Map<String, String> headers = HttpHeadersModel.getInstance().getHttpHeaders();
+		for (String name : headers.keySet()) {
+			connection.setRequestProperty(name, headers.get(name));
+		}
+		
 		if (requestModel.getMethod().equals("POST")) {
 			if (connection instanceof HttpsURLConnection) {
 				((HttpsURLConnection) connection).setRequestProperty(CONTENT_TYPE, CONTENT_TYPE_XML);
